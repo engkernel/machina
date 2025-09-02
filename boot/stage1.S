@@ -1,5 +1,4 @@
 .code16
-.section .bootloader
 .global _boot
 
 .set KERNEL_CS, 0x08

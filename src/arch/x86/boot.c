@@ -10,17 +10,16 @@
 
 #define HIGH_HALF_PDE (HIGH_HALF_KERNEL >> 22)
 
-__attribute__(align(BOOT_PAGE_SIZE), section(".boot.data"))
+__attribute__((aligned(BOOT_PAGE_SIZE), section(".boot.data")))
 static uint32_t boot_pd[TOTAL_PG_DIR];
 
-__attribute__(align(BOOT_PAGE_SIZE), section(".boot.data"))
+__attribute__((aligned(BOOT_PAGE_SIZE), section(".boot.data")))
 static uint32_t boot_pt0[TOTAL_PTE0];
 
-__attribute__(align(BOOT_PAGE_SIZE), section(".boot.data"))
-static uint32_t boot_stack[BOOT_STACK_SIZE];
+//__attribute__((aligned(BOOT_PAGE_SIZE), section(".boot.data")))
+//static uint32_t boot_stack[BOOT_STACK_SIZE];
 
-
-SECTION_BOOT 
+SECTION_BOOT
 void boot_init()
 {
 	uint32_t cr0;
@@ -39,7 +38,7 @@ void boot_init()
 		boot_pt0[i] = 0;
 
 	for (int i = 0; i < TOTAL_PTE0; ++i)
-		boot_pte0[i] = (BOOT_PAGE_SIZE * i) | PAGE_PRESENT_RW;
+		boot_pt0[i] = (BOOT_PAGE_SIZE * i) | PAGE_PRESENT_RW;
 
 	/* install pt at pd for identity mapping */
 	boot_pd[0] = ((uint32_t)boot_pt0 | PAGE_PRESENT_RW);
@@ -52,10 +51,10 @@ void boot_init()
 	
 	/* now we start mapping the physical kernel to vma so we could read really higher half */
 	/* load cr3 */
-	asm volatile("mov %0, %%cr3" :: "r"(boot_pd));
+	__asm__ volatile("mov %0, %%cr3" :: "r"(boot_pd));
 
 	/* enable paging */
-	asm volatile("mov %%cr0, %0" : "=r"(cr0));
+	__asm__ volatile("mov %%cr0, %0" : "=r"(cr0));
 	cr0 |= 0x80000000u;
-	asm volatile("mov %0, %%cr0" :: "r"(cr0));
+	__asm__ volatile("mov %0, %%cr0" :: "r"(cr0));
 }

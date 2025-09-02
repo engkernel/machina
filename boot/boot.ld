@@ -2,8 +2,8 @@ ENTRY(_boot)
 SECTIONS
 {
 	. = 0x7c00;
-	.bootloader :
+	.text : ALIGN(4096)
 	{
-		*(.bootloader)
+		*(.text)
 	}
 }

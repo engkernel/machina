@@ -12,19 +12,18 @@ start:
 	mov %ax, %fs
 	mov %ax, %gs
 	mov %ax, %ss
-	mov $0x00200000, %ebp
-	mov %ebp, %esp
+	//mov $0x00200000, %esp
+	//mov %esp, %ebp
 
 	/* setup basic paging for kernel higher half */
-	call boot_init
+	mov $boot_init, %eax
+	call *%eax	
 
-	/* setup full paging, heap, stack */
-	call setup_memory
+	mov $mm_init, %eax
+	call *%eax
 
-	mov $HIGH_KERNEL_BASE + 0x10000, %esp
-	mov %esp, %ebp
-
-	jmp kmain
+	mov $kmain, %eax
+	call *%eax
 loop:
 	jmp loop
 

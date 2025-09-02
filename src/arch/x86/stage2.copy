@@ -1,0 +1,40 @@
+.code32
+.section .boot
+.global start
+.extern kmain
+
+.set KERNEL_DS, 0x10
+.set HIGH_KERNEL_BASE, 0xc0000000
+start:
+	mov $KERNEL_DS, %ax
+	mov %ax, %ds
+	mov %ax, %es
+	mov %ax, %fs
+	mov %ax, %gs
+	mov %ax, %ss
+	mov $0x00200000, %ebp
+	mov %ebp, %esp
+
+	/* setup basic paging for kernel higher half */
+	call boot_init
+
+	/* we have enabled basic paging as boot_pg now we should jump to virtual address */
+	lea hh_entry, %eax
+	add $HIGH_KERNEL_BASE, %eax
+	jmp *%eax	/* now we are jump to higher half hh_entry */
+
+hh_entry:
+	mov $HIGH_KERNEL_BASE, %eax
+	add $0x00101000, %eax
+
+	mov %eax, %esp
+	mov %esp, %ebp
+
+	/* setup full paging, heap, stack */
+	call mm_init
+
+	jmp kmain
+loop:
+	jmp loop
+
+.fill 512-(.-start),1,0
